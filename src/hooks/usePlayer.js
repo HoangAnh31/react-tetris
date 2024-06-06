@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
 
 import { randomTetromino, TETROMINOS } from "../tetrominos";
-import { STAGE_WIDTH } from "../gameHelpers";
+import { checkCollision, STAGE_WIDTH } from "../gameHelpers";
+import Stage from "../components/Stage";
 
 const INITIAL_PLAYER = {
   pos: { x: 0, y: 0 },
@@ -11,6 +12,38 @@ const INITIAL_PLAYER = {
 
 export const usePlayer = () => {
   const [player, setPlayer] = useState(INITIAL_PLAYER);
+
+  const rotate = (matrixTetromino, dir) => {
+    //make the rows to become cols
+    const rotatedTetro = matrixTetromino.map((_, index) =>
+      matrixTetromino.map((col) => col[index])
+    );
+    console.log(dir);
+    console.log(rotatedTetro);
+
+    //reverse each row to get rotated matrix
+    if (dir > 0) return rotatedTetro.map((row) => row.reverse());
+    return rotatedTetro.reverse();
+  };
+
+  const playerRotate = (stage, dir) => {
+    const clonePlayer = JSON.parse(JSON.stringify(player));
+
+    clonePlayer.tetromino = rotate(clonePlayer.tetromino, dir);
+
+    const pos = clonePlayer.pos.x;
+    let offset = 1;
+    while (checkCollision(clonePlayer, stage, { x: 0, y: 0 })) {
+      clonePlayer.pos.x += offset;
+      offset = -(offset + offset > 0 ? 1 : -1);
+      if (offset > clonePlayer.tetromino[0].length) {
+        rotate(clonePlayer.tetromino, -dir);
+        clonePlayer.pos.x = pos;
+        return;
+      }
+    }
+    setPlayer(clonePlayer);
+  };
 
   const updatePlayerPos = ({ x, y, collided }) => {
     setPlayer((prev) => ({
@@ -28,5 +61,5 @@ export const usePlayer = () => {
     });
   }, []);
 
-  return [player, updatePlayerPos, resetPlayer];
+  return [player, updatePlayerPos, resetPlayer, playerRotate];
 };
