@@ -18,8 +18,6 @@ export const usePlayer = () => {
     const rotatedTetro = matrixTetromino.map((_, index) =>
       matrixTetromino.map((col) => col[index])
     );
-    console.log(dir);
-    console.log(rotatedTetro);
 
     //reverse each row to get rotated matrix
     if (dir > 0) return rotatedTetro.map((row) => row.reverse());
